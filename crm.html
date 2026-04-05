@@ -496,13 +496,24 @@
 
     try {
       const r = await fetch(API, { headers: { 'x-password': password } });
+
       if (r.status === 401) {
-        if (isLogin) {
-          document.getElementById('loginError').style.display = 'block';
-          document.getElementById('loadingState').style.display = 'none';
-        }
+        document.getElementById('loginError').textContent = 'Wrong password. Try again.';
+        document.getElementById('loginError').style.display = 'block';
+        document.getElementById('loadingState').style.display = 'none';
         return;
       }
+
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        if (isLogin) {
+          document.getElementById('loginError').textContent = 'API error: ' + (err.error || r.status) + '. Check Notion token in Vercel env vars.';
+          document.getElementById('loginError').style.display = 'block';
+        }
+        document.getElementById('loadingState').style.display = 'none';
+        return;
+      }
+
       allLeads = await r.json();
 
       if (isLogin) {
@@ -514,7 +525,11 @@
       updateStats();
       renderTable();
     } catch (e) {
-      document.getElementById('loadingState').innerHTML = '<div style="color:var(--red)">Failed to load. Check your connection.</div>';
+      if (isLogin) {
+        document.getElementById('loginError').textContent = 'Connection failed: ' + e.message;
+        document.getElementById('loginError').style.display = 'block';
+      }
+      document.getElementById('loadingState').style.display = 'none';
     }
   }
 
