@@ -1,545 +1,1043 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CLPD Studio — AI Content for Creators</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      background: #080808;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
+    :root {
+      --black:   #0a0a0a;
+      --surface: #111111;
+      --border:  rgba(255,255,255,0.08);
+      --muted:   rgba(255,255,255,0.38);
+      --text:    #f0f0f0;
+      --lime:    #cdff6b;
+      --radius:  16px;
     }
 
-    h1, h2, h3, .heading { font-family: 'Syne', sans-serif; }
+    html { scroll-behavior: smooth; }
 
-    /* ── GRAIN OVERLAY ── */
-    body::after {
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── SCROLLBAR ─────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    /* ─── NOISE TEXTURE ─────────────────────────── */
+    body::before {
       content: '';
       position: fixed;
       inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
       pointer-events: none;
-      z-index: 9999;
-      opacity: 0.035;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      z-index: 9998;
     }
 
-    /* ── MARQUEE ── */
-    @keyframes marquee {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
+    /* ─── TYPOGRAPHY ────────────────────────────── */
+    .serif { font-family: 'Instrument Serif', serif; font-style: italic; }
+
+    h1, h2, h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
     }
-    .marquee-track {
+
+    /* ─── LAYOUT ────────────────────────────────── */
+    .container {
+      width: 100%;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    section { padding: 120px 0; }
+
+    .divider { border-top: 1px solid var(--border); }
+
+    /* ─── NAV ───────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,10,0.75);
+    }
+    nav .inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo span { color: var(--lime); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--lime);
+      color: #000 !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      padding: 9px 20px;
+      border-radius: 100px;
+      transition: opacity 0.2s, transform 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ─── BUTTONS ───────────────────────────────── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--lime);
+      color: #000;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      padding: 14px 28px;
+      border-radius: 100px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-2px); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      padding: 14px 4px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    /* ─── PILL ──────────────────────────────────── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+    .pill-dot {
+      width: 6px; height: 6px;
+      background: var(--lime);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* ─── HERO ──────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(205,255,107,0.07) 0%, transparent 70%);
+      top: -200px; right: -200px;
+      pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(120,80,255,0.06) 0%, transparent 70%);
+      bottom: -100px; left: -100px;
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-eyebrow { margin-bottom: 36px; }
+    .hero-headline {
+      font-size: clamp(52px, 7.5vw, 96px);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      margin-bottom: 28px;
+    }
+    .hero-headline .italic-word {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--lime);
+    }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 500px;
+      line-height: 1.65;
+      font-weight: 400;
+      margin-bottom: 40px;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 88px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-value {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    /* ─── TICKER ────────────────────────────────── */
+    .ticker-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+      background: var(--surface);
+    }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .ticker-track {
       display: flex;
       width: max-content;
-      animation: marquee 20s linear infinite;
+      animation: ticker 24s linear infinite;
+      gap: 0;
     }
-    .marquee-track:hover { animation-play-state: paused; }
-
-    /* ── GLOW BLOB ── */
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-    }
-
-    /* ── PILL TAG ── */
-    .tag {
-      display: inline-block;
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.55);
-      font-size: 11px;
-      letter-spacing: 0.08em;
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 0 28px;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.22);
+      white-space: nowrap;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      padding: 5px 14px;
-      border-radius: 100px;
+    }
+    .ticker-item .sep {
+      color: var(--lime);
+      font-size: 10px;
     }
 
-    /* ── CARD ── */
-    .card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 20px;
-      transition: border-color 0.3s, transform 0.3s;
+    /* ─── SECTION LABEL ─────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 20px;
     }
-    .card:hover {
-      border-color: rgba(255,255,255,0.18);
-      transform: translateY(-4px);
+    .section-title {
+      font-size: clamp(36px, 4.5vw, 58px);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+    }
+    .section-title .serif {
+      color: rgba(255,255,255,0.55);
     }
 
-    /* ── VIDEO REEL CARD ── */
-    .reel-card {
-      border-radius: 16px;
+    /* ─── SERVICES ──────────────────────────────── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 60px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       overflow: hidden;
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.07);
-      transition: transform 0.3s;
     }
-    .reel-card:hover { transform: scale(1.02); }
-
-    /* ── CTA BUTTON ── */
-    .btn-white {
-      background: #fff;
-      color: #000;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: 0.04em;
-      padding: 14px 32px;
-      border-radius: 100px;
-      transition: background 0.2s, transform 0.2s;
-      display: inline-block;
+    .service-card {
+      background: var(--surface);
+      padding: 44px;
+      transition: background 0.3s;
+      position: relative;
     }
-    .btn-white:hover { background: #e0e0e0; transform: translateY(-2px); }
-
-    .btn-outline {
-      background: transparent;
-      color: #fff;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: 0.04em;
-      padding: 13px 32px;
-      border-radius: 100px;
-      border: 1px solid rgba(255,255,255,0.25);
-      transition: border-color 0.2s, transform 0.2s;
-      display: inline-block;
-    }
-    .btn-outline:hover { border-color: #fff; transform: translateY(-2px); }
-
-    /* ── INPUT ── */
-    .input {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
-      border-radius: 12px;
-      padding: 14px 18px;
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      width: 100%;
-      transition: border-color 0.2s;
-    }
-    .input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
-    .input::placeholder { color: rgba(255,255,255,0.2); }
-
-    /* ── SCROLL FADE ── */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-    .fade-up.show { opacity: 1; transform: translateY(0); }
-
-    /* ── COUNTER GLOW ── */
-    .big-num {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(3rem, 8vw, 6rem);
-      font-weight: 800;
-      line-height: 1;
-      background: linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.4));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* ── PROCESS STEP ── */
-    .step-line::before {
+    .service-card::after {
       content: '';
       position: absolute;
-      left: 19px;
-      top: 48px;
-      bottom: -20px;
-      width: 1px;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
+      bottom: 0; left: 44px; right: 44px;
+      height: 1px;
+      background: var(--border);
+    }
+    .service-card:hover { background: #161616; }
+    .service-card.wide {
+      grid-column: span 2;
+    }
+    .service-icon {
+      width: 44px; height: 44px;
+      background: rgba(205,255,107,0.08);
+      border: 1px solid rgba(205,255,107,0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 24px;
+    }
+    .service-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .service-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 360px;
+    }
+    .service-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .service-tag {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: rgba(205,255,107,0.6);
+      background: rgba(205,255,107,0.06);
+      border: 1px solid rgba(205,255,107,0.12);
+      padding: 4px 12px;
+      border-radius: 100px;
     }
 
-    /* ── NAV ── */
-    nav {
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      background: rgba(8,8,8,0.7);
+    /* ─── REELS GALLERY ─────────────────────────── */
+    .reels-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 60px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .reels-row::-webkit-scrollbar { display: none; }
+    .reel {
+      flex-shrink: 0;
+      width: 220px;
+      aspect-ratio: 9/16;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .reel:hover { transform: translateY(-6px); border-color: rgba(205,255,107,0.25); }
+    .reel-inner {
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .reel-emoji { font-size: 48px; }
+    .reel-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 20px 16px 16px;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    }
+    .reel-niche {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 4px;
+    }
+    .reel-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+    .reel-plays {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    /* gradient backgrounds for each reel */
+    .reel:nth-child(1) .reel-inner { background: linear-gradient(160deg, #1a1206 0%, #0a0a0a 60%); }
+    .reel:nth-child(2) .reel-inner { background: linear-gradient(160deg, #06101a 0%, #0a0a0a 60%); }
+    .reel:nth-child(3) .reel-inner { background: linear-gradient(160deg, #100a1a 0%, #0a0a0a 60%); }
+    .reel:nth-child(4) .reel-inner { background: linear-gradient(160deg, #0a1a0a 0%, #0a0a0a 60%); }
+    .reel:nth-child(5) .reel-inner { background: linear-gradient(160deg, #1a0a0a 0%, #0a0a0a 60%); }
+
+    /* ─── PROCESS ───────────────────────────────── */
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      margin-top: 60px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .process-step {
+      background: var(--surface);
+      padding: 40px 32px;
+      transition: background 0.3s;
+    }
+    .process-step:hover { background: #161616; }
+    .step-num {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--lime);
+      margin-bottom: 32px;
+    }
+    .step-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
     }
 
-    /* ── SECTION DIVIDER ── */
-    .divider { border-color: rgba(255,255,255,0.06); }
+    /* ─── QUOTE ─────────────────────────────────── */
+    .quote-section {
+      padding: 80px 0;
+    }
+    .quote-text {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: clamp(28px, 4vw, 52px);
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.7);
+      max-width: 820px;
+    }
+    .quote-text strong { color: var(--text); font-style: normal; font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+    .quote-attr {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 28px;
+    }
 
-    /* ── ACCENT COLOR ── */
-    .accent { color: #B4FF5B; }
-    .accent-bg { background: #B4FF5B; }
+    /* ─── CONTACT ───────────────────────────────── */
+    .contact-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .contact-left h2 { margin-bottom: 16px; }
+    .contact-left p {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+    .contact-feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .contact-feature::before {
+      content: '✓';
+      width: 22px; height: 22px;
+      background: rgba(205,255,107,0.1);
+      border: 1px solid rgba(205,255,107,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--lime);
+      flex-shrink: 0;
+    }
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(205,255,107,0.4);
+      background: rgba(205,255,107,0.03);
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.18); }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    textarea.form-input { resize: none; }
+    .form-submit {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    /* ─── SUCCESS ───────────────────────────────── */
+    #successMsg {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .success-icon {
+      width: 64px; height: 64px;
+      background: rgba(205,255,107,0.1);
+      border: 1px solid rgba(205,255,107,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 20px;
+    }
+
+    /* ─── FOOTER ────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 36px 0;
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 13px; color: rgba(255,255,255,0.2); }
+
+    /* ─── ANIMATIONS ────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ─── RESPONSIVE ────────────────────────────── */
+    @media (max-width: 768px) {
+      section { padding: 80px 0; }
+      .container { padding: 0 20px; }
+      .hero-headline { font-size: 48px; }
+      .hero-stats { gap: 28px; flex-wrap: wrap; }
+      .stat-value { font-size: 32px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .service-card.wide { grid-column: span 1; }
+      .process-grid { grid-template-columns: 1fr 1fr; }
+      .contact-wrap { grid-template-columns: 1fr; gap: 48px; }
+      .form-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .nav-cta { display: inline-flex; }
+    }
+    @media (max-width: 480px) {
+      .process-grid { grid-template-columns: 1fr; }
+      .hero-headline { font-size: 40px; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- ══ NAV ══════════════════════════════════════════════════════ -->
-  <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/5">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="#" class="heading text-xl font-bold tracking-tight">CLPD<span class="accent">.</span></a>
-      <div class="hidden md:flex items-center gap-8 text-sm text-white/50">
-        <a href="#services" class="hover:text-white transition-colors">Services</a>
-        <a href="#work" class="hover:text-white transition-colors">Work</a>
-        <a href="#process" class="hover:text-white transition-colors">Process</a>
-        <a href="#contact" class="btn-white text-sm py-2 px-5">Get Started</a>
+  <!-- ══ NAV ══════════════════════════════════════════════ -->
+  <nav>
+    <div class="container">
+      <div class="inner">
+        <a href="#" class="logo">CLPD<span>.</span></a>
+        <ul class="nav-links">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#process">Process</a></li>
+          <li><a href="#contact" class="nav-cta">Get Started</a></li>
+        </ul>
+        <a href="#contact" class="nav-cta" style="display:none;" id="mobile-cta">Get Started</a>
       </div>
-      <!-- Mobile -->
-      <a href="#contact" class="md:hidden btn-white text-sm py-2 px-5">Get Started</a>
     </div>
   </nav>
 
-  <!-- ══ HERO ══════════════════════════════════════════════════════ -->
-  <section class="relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-16 text-center overflow-hidden">
+  <!-- ══ HERO ══════════════════════════════════════════════ -->
+  <section id="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+    <div class="container">
+      <div class="hero-content">
 
-    <!-- Blobs -->
-    <div class="blob w-[600px] h-[600px] bg-[#B4FF5B]/10 top-[-200px] left-[-200px]"></div>
-    <div class="blob w-[400px] h-[400px] bg-purple-500/10 bottom-[-100px] right-[-100px]"></div>
+        <div class="hero-eyebrow reveal">
+          <div class="pill">
+            <span class="pill-dot"></span>
+            Taking new clients — 2026
+          </div>
+        </div>
 
-    <div class="relative z-10 max-w-5xl mx-auto fade-up">
-      <div class="tag mb-8">AI-Powered Content Studio</div>
+        <h1 class="hero-headline reveal reveal-delay-1">
+          We make content<br/>
+          that <span class="italic-word">actually</span> grows<br/>
+          your channel.
+        </h1>
 
-      <h1 class="text-[clamp(3rem,10vw,7.5rem)] font-extrabold leading-[0.95] tracking-tight mb-8">
-        Content that<br/>
-        <span class="accent">actually</span> hits.
-      </h1>
+        <p class="hero-sub reveal reveal-delay-2">
+          AI-powered video production for creators.
+          We write, edit, and post — you just show up
+          and watch the numbers move.
+        </p>
 
-      <p class="text-white/50 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
-        We use AI to build, write, edit, and post content for creators —
-        so you stay consistent without burning out.
-      </p>
+        <div class="hero-actions reveal reveal-delay-3">
+          <a href="#contact" class="btn-primary">
+            Start growing →
+          </a>
+          <a href="#work" class="btn-ghost">
+            See our work ↓
+          </a>
+        </div>
 
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="#contact" class="btn-white">Work With Us →</a>
-        <a href="#work" class="btn-outline">See Our Work</a>
-      </div>
-    </div>
+        <div class="hero-stats reveal">
+          <div>
+            <div class="stat-value">200+</div>
+            <div class="stat-label">Reels posted</div>
+          </div>
+          <div>
+            <div class="stat-value">30+</div>
+            <div class="stat-label">Creators served</div>
+          </div>
+          <div>
+            <div class="stat-value">10×</div>
+            <div class="stat-label">Faster output</div>
+          </div>
+          <div>
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Done for you</div>
+          </div>
+        </div>
 
-    <!-- Stat strip -->
-    <div class="relative z-10 w-full max-w-3xl mx-auto mt-24 grid grid-cols-3 gap-4 border-t border-white/5 pt-12 fade-up">
-      <div>
-        <div class="big-num">200+</div>
-        <div class="text-white/35 text-xs uppercase tracking-widest mt-2">Reels Posted</div>
-      </div>
-      <div>
-        <div class="big-num">30+</div>
-        <div class="text-white/35 text-xs uppercase tracking-widest mt-2">Creators Served</div>
-      </div>
-      <div>
-        <div class="big-num">10x</div>
-        <div class="text-white/35 text-xs uppercase tracking-widest mt-2">Faster Output</div>
       </div>
     </div>
   </section>
 
-  <!-- ══ MARQUEE TICKER ═════════════════════════════════════════════ -->
-  <div class="overflow-hidden border-y border-white/5 py-5 bg-white/[0.02]">
-    <div class="marquee-track">
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Instagram Reels</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">YouTube Shorts</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">TikTok Videos</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">AI Captions</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Auto Posting</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Content Strategy</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Faceless Content</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Bulk Production</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <!-- duplicate for seamless loop -->
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Instagram Reels</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">YouTube Shorts</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">TikTok Videos</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">AI Captions</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Auto Posting</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Content Strategy</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Faceless Content</span>
-      <span class="accent text-sm mx-4">✦</span>
-      <span class="text-white/20 text-sm uppercase tracking-widest mx-8">Bulk Production</span>
-      <span class="accent text-sm mx-4">✦</span>
+  <!-- ══ TICKER ════════════════════════════════════════════ -->
+  <div class="ticker-wrap">
+    <div class="ticker-track">
+      <div class="ticker-item">Instagram Reels <span class="sep">✦</span></div>
+      <div class="ticker-item">YouTube Shorts <span class="sep">✦</span></div>
+      <div class="ticker-item">TikTok Videos <span class="sep">✦</span></div>
+      <div class="ticker-item">AI Captions <span class="sep">✦</span></div>
+      <div class="ticker-item">Auto Posting <span class="sep">✦</span></div>
+      <div class="ticker-item">Faceless Channels <span class="sep">✦</span></div>
+      <div class="ticker-item">Content Strategy <span class="sep">✦</span></div>
+      <div class="ticker-item">Bulk Production <span class="sep">✦</span></div>
+      <div class="ticker-item">AI Scriptwriting <span class="sep">✦</span></div>
+      <!-- repeat -->
+      <div class="ticker-item">Instagram Reels <span class="sep">✦</span></div>
+      <div class="ticker-item">YouTube Shorts <span class="sep">✦</span></div>
+      <div class="ticker-item">TikTok Videos <span class="sep">✦</span></div>
+      <div class="ticker-item">AI Captions <span class="sep">✦</span></div>
+      <div class="ticker-item">Auto Posting <span class="sep">✦</span></div>
+      <div class="ticker-item">Faceless Channels <span class="sep">✦</span></div>
+      <div class="ticker-item">Content Strategy <span class="sep">✦</span></div>
+      <div class="ticker-item">Bulk Production <span class="sep">✦</span></div>
+      <div class="ticker-item">AI Scriptwriting <span class="sep">✦</span></div>
     </div>
   </div>
 
-  <!-- ══ SERVICES ═══════════════════════════════════════════════════ -->
-  <section id="services" class="py-32 px-6">
-    <div class="max-w-6xl mx-auto">
-
-      <div class="mb-16 fade-up">
-        <div class="tag mb-5">What We Do</div>
-        <h2 class="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight">
-          We handle the<br/><span class="accent">content machine.</span>
+  <!-- ══ SERVICES ══════════════════════════════════════════ -->
+  <section id="services" class="divider">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">What we do</p>
+        <h2 class="section-title">
+          Everything your channel needs.<br/>
+          <span class="serif">None of the stress.</span>
         </h2>
       </div>
 
-      <!-- Services Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 fade-up">
+      <div class="services-grid reveal">
 
-        <!-- Card 1 — Full width top -->
-        <div class="card p-8 md:col-span-2 flex flex-col md:flex-row items-start md:items-center gap-8">
-          <div class="flex-1">
-            <div class="text-4xl mb-4">🎬</div>
-            <h3 class="heading text-3xl font-bold mb-3">AI Video Production</h3>
-            <p class="text-white/45 leading-relaxed max-w-lg">
-              We produce short-form videos at scale using AI — scripted, edited,
-              captioned, and ready to post. Reels, Shorts, TikToks. Dozens per month.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2 md:flex-col">
-            <span class="tag">Reels</span>
-            <span class="tag">Shorts</span>
-            <span class="tag">TikTok</span>
-            <span class="tag">AI Captions</span>
-          </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="card p-8">
-          <div class="text-4xl mb-4">⚡</div>
-          <h3 class="heading text-2xl font-bold mb-3">Auto Posting Pipeline</h3>
-          <p class="text-white/45 leading-relaxed">
-            Full automation — content gets created, scheduled, and posted
-            to Instagram, YouTube & TikTok without you lifting a finger.
-          </p>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="card p-8">
-          <div class="text-4xl mb-4">✍️</div>
-          <h3 class="heading text-2xl font-bold mb-3">AI Scriptwriting</h3>
-          <p class="text-white/45 leading-relaxed">
-            Hooks, scripts, and captions built for your niche. Optimized for
-            watch time, saves, and shares — not just views.
-          </p>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="card p-8">
-          <div class="text-4xl mb-4">🎭</div>
-          <h3 class="heading text-2xl font-bold mb-3">Faceless Content</h3>
-          <p class="text-white/45 leading-relaxed">
-            Don't want to be on camera? We build faceless channels
-            with AI voiceovers, B-roll, and motion graphics.
-          </p>
-        </div>
-
-        <!-- Card 5 -->
-        <div class="card p-8">
-          <div class="text-4xl mb-4">📈</div>
-          <h3 class="heading text-2xl font-bold mb-3">Content Strategy</h3>
-          <p class="text-white/45 leading-relaxed">
-            Monthly content calendars built around trends, your niche,
-            and what the algorithm actually rewards right now.
-          </p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ WORK / PORTFOLIO ═══════════════════════════════════════════ -->
-  <section id="work" class="py-32 px-6 border-t divider">
-    <div class="max-w-6xl mx-auto">
-
-      <div class="mb-16 fade-up">
-        <div class="tag mb-5">Portfolio</div>
-        <h2 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-          Recent <span class="accent">drops.</span>
-        </h2>
-      </div>
-
-      <!-- Reel grid — portrait cards like IG -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 fade-up">
-
-        <div class="reel-card">
-          <div class="aspect-[9/16] bg-gradient-to-br from-[#1a1a1a] to-[#0d0d0d] flex flex-col items-center justify-center relative p-4">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-            <div class="text-5xl">🏢</div>
-            <div class="absolute bottom-4 left-4 right-4 z-10">
-              <div class="text-[10px] text-white/40 uppercase tracking-wider mb-1">Real Estate</div>
-              <div class="text-sm font-semibold leading-tight">Franchise Tips Series</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="reel-card">
-          <div class="aspect-[9/16] bg-gradient-to-br from-[#1a1206] to-[#0d0d0d] flex flex-col items-center justify-center relative p-4">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-            <div class="text-5xl">💰</div>
-            <div class="absolute bottom-4 left-4 right-4 z-10">
-              <div class="text-[10px] text-white/40 uppercase tracking-wider mb-1">Finance</div>
-              <div class="text-sm font-semibold leading-tight">Money Mindset Reels</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="reel-card">
-          <div class="aspect-[9/16] bg-gradient-to-br from-[#0d0d1a] to-[#0d0d0d] flex flex-col items-center justify-center relative p-4">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-            <div class="text-5xl">🧠</div>
-            <div class="absolute bottom-4 left-4 right-4 z-10">
-              <div class="text-[10px] text-white/40 uppercase tracking-wider mb-1">Education</div>
-              <div class="text-sm font-semibold leading-tight">AI Tools Breakdown</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="reel-card">
-          <div class="aspect-[9/16] bg-gradient-to-br from-[#0d1a0d] to-[#0d0d0d] flex flex-col items-center justify-center relative p-4">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
-            <div class="text-5xl">🏋️</div>
-            <div class="absolute bottom-4 left-4 right-4 z-10">
-              <div class="text-[10px] text-white/40 uppercase tracking-wider mb-1">Fitness</div>
-              <div class="text-sm font-semibold leading-tight">Daily Motivation Clips</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ PROCESS ════════════════════════════════════════════════════ -->
-  <section id="process" class="py-32 px-6 border-t divider">
-    <div class="max-w-6xl mx-auto">
-
-      <div class="mb-16 fade-up">
-        <div class="tag mb-5">How It Works</div>
-        <h2 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-          Simple.<br/><span class="accent">Done for you.</span>
-        </h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 fade-up">
-
-        <div class="card p-7 relative">
-          <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-sm font-bold text-white/40 mb-6">01</div>
-          <h3 class="heading text-xl font-bold mb-3">Onboarding Call</h3>
-          <p class="text-white/40 text-sm leading-relaxed">We learn your niche, audience, goals and tone of voice. 30 mins max.</p>
-        </div>
-
-        <div class="card p-7">
-          <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-sm font-bold text-white/40 mb-6">02</div>
-          <h3 class="heading text-xl font-bold mb-3">Content Plan</h3>
-          <p class="text-white/40 text-sm leading-relaxed">We build your monthly calendar — topics, formats, posting schedule. All AI-assisted.</p>
-        </div>
-
-        <div class="card p-7">
-          <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-sm font-bold text-white/40 mb-6">03</div>
-          <h3 class="heading text-xl font-bold mb-3">Production</h3>
-          <p class="text-white/40 text-sm leading-relaxed">Our AI pipeline generates scripts, visuals, captions and edits — batch produced every week.</p>
-        </div>
-
-        <div class="card p-7">
-          <div class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-sm font-bold text-white/40 mb-6">04</div>
-          <h3 class="heading text-xl font-bold mb-3">Auto-Posted</h3>
-          <p class="text-white/40 text-sm leading-relaxed">Content goes live on your accounts automatically. You just watch the numbers grow.</p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ SOCIAL PROOF / QUOTE ═══════════════════════════════════════ -->
-  <section class="py-32 px-6 border-t divider">
-    <div class="max-w-4xl mx-auto text-center fade-up">
-      <div class="text-5xl mb-8">💬</div>
-      <blockquote class="heading text-3xl md:text-5xl font-bold leading-tight mb-8">
-        "We went from posting once a week to <span class="accent">30 reels a month</span> — without hiring anyone."
-      </blockquote>
-      <div class="text-white/35 text-sm uppercase tracking-widest">— Creator Client, Finance Niche</div>
-    </div>
-  </section>
-
-  <!-- ══ CONTACT ════════════════════════════════════════════════════ -->
-  <section id="contact" class="py-32 px-6 border-t divider">
-    <div class="max-w-2xl mx-auto">
-
-      <div class="text-center mb-14 fade-up">
-        <div class="tag mb-5">Get Started</div>
-        <h2 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-          Let's build<br/><span class="accent">your channel.</span>
-        </h2>
-        <p class="text-white/40 mt-5 text-lg">Fill this in and we'll reach out within 24 hours.</p>
-      </div>
-
-      <div class="card p-8 md:p-10 fade-up">
-        <form id="contactForm" onsubmit="handleSubmit(event)">
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="service-card wide">
+          <div class="service-icon">🎬</div>
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:40px; flex-wrap:wrap;">
             <div>
-              <label class="text-xs text-white/35 uppercase tracking-widest block mb-2">Your Name</label>
-              <input id="name" type="text" placeholder="Alex Johnson" required class="input" />
+              <div class="service-name">AI Video Production</div>
+              <p class="service-desc">
+                We produce short-form videos at scale. Scripted, edited, captioned,
+                and posted — dozens per month across Instagram, TikTok, and YouTube Shorts.
+                No camera crew. No back-and-forth. Just consistent output.
+              </p>
             </div>
-            <div>
-              <label class="text-xs text-white/35 uppercase tracking-widest block mb-2">Email</label>
-              <input id="email" type="email" placeholder="you@email.com" required class="input" />
+            <div class="service-tags" style="flex-shrink:0;">
+              <span class="service-tag">Reels</span>
+              <span class="service-tag">TikTok</span>
+              <span class="service-tag">Shorts</span>
+              <span class="service-tag">AI Edits</span>
             </div>
           </div>
-
-          <div class="mb-4">
-            <label class="text-xs text-white/35 uppercase tracking-widest block mb-2">Your Niche / Platform</label>
-            <select id="service" class="input" style="appearance:none;">
-              <option value="" style="background:#111">Select...</option>
-              <option value="instagram" style="background:#111">Instagram Creator</option>
-              <option value="youtube" style="background:#111">YouTube Channel</option>
-              <option value="tiktok" style="background:#111">TikTok Creator</option>
-              <option value="faceless" style="background:#111">Faceless Channel</option>
-              <option value="brand" style="background:#111">Brand / Business</option>
-              <option value="other" style="background:#111">Other</option>
-            </select>
-          </div>
-
-          <div class="mb-6">
-            <label class="text-xs text-white/35 uppercase tracking-widest block mb-2">Tell Us About Your Goals</label>
-            <textarea id="message" rows="4" placeholder="e.g. I want to post 20 reels/month and grow my IG to 10k..." required
-              class="input resize-none"></textarea>
-          </div>
-
-          <button type="submit" id="submitBtn" class="btn-white w-full text-center">
-            Send Message →
-          </button>
-
-        </form>
-
-        <!-- Success -->
-        <div id="successMsg" class="hidden text-center py-16">
-          <div class="text-6xl mb-5">🚀</div>
-          <h3 class="heading text-3xl font-bold mb-2">You're in.</h3>
-          <p class="text-white/40">We'll hit you back within 24 hours.</p>
         </div>
-      </div>
 
+        <div class="service-card">
+          <div class="service-icon">⚡</div>
+          <div class="service-name">Auto Posting</div>
+          <p class="service-desc">
+            Full pipeline — content is created, scheduled, and published
+            automatically. No login. No lifting a finger.
+          </p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">✍️</div>
+          <div class="service-name">AI Scriptwriting</div>
+          <p class="service-desc">
+            Hooks and scripts built for your niche and tone of voice.
+            Optimized for watch time, shares, and saves.
+          </p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🎭</div>
+          <div class="service-name">Faceless Content</div>
+          <p class="service-desc">
+            Don't want to film? We build full faceless channels using
+            AI voiceovers, B-roll, and motion graphics.
+          </p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📈</div>
+          <div class="service-name">Content Strategy</div>
+          <p class="service-desc">
+            Monthly calendars built around trends, your niche,
+            and what the algorithm is actually rewarding right now.
+          </p>
+        </div>
+
+      </div>
     </div>
   </section>
 
-  <!-- ══ FOOTER ═════════════════════════════════════════════════════ -->
-  <footer class="border-t divider py-10 px-6">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-      <span class="heading text-xl font-bold">CLPD<span class="accent">.</span></span>
-      <span class="text-white/20 text-sm">© 2026 CLPD Studio. AI Content for Creators.</span>
-      <div class="flex gap-6 text-white/30 text-sm">
-        <a href="#" class="hover:text-white transition-colors">Instagram</a>
-        <a href="#" class="hover:text-white transition-colors">TikTok</a>
-        <a href="#" class="hover:text-white transition-colors">YouTube</a>
+  <!-- ══ WORK ════════════════════════════════════════════════ -->
+  <section id="work" class="divider">
+    <div class="container">
+      <div class="reveal" style="display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:60px;">
+        <div>
+          <p class="section-label">Portfolio</p>
+          <h2 class="section-title">Recent drops.</h2>
+        </div>
+        <a href="#contact" class="btn-ghost">Work with us →</a>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="reels-row reveal">
+
+        <div class="reel">
+          <div class="reel-inner">
+            <div class="reel-emoji">🏢</div>
+            <div class="reel-overlay">
+              <div class="reel-niche">Real Estate</div>
+              <div class="reel-title">Franchise Tips Series</div>
+              <div class="reel-plays">24 reels / month</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reel">
+          <div class="reel-inner">
+            <div class="reel-emoji">💰</div>
+            <div class="reel-overlay">
+              <div class="reel-niche">Finance</div>
+              <div class="reel-title">Money Mindset Reels</div>
+              <div class="reel-plays">16 reels / month</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reel">
+          <div class="reel-inner">
+            <div class="reel-emoji">🧠</div>
+            <div class="reel-overlay">
+              <div class="reel-niche">Education</div>
+              <div class="reel-title">AI Tools Breakdown</div>
+              <div class="reel-plays">30 reels / month</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reel">
+          <div class="reel-inner">
+            <div class="reel-emoji">🏋️</div>
+            <div class="reel-overlay">
+              <div class="reel-niche">Fitness</div>
+              <div class="reel-title">Daily Motivation Clips</div>
+              <div class="reel-plays">20 reels / month</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reel">
+          <div class="reel-inner">
+            <div class="reel-emoji">🎯</div>
+            <div class="reel-overlay">
+              <div class="reel-niche">Business</div>
+              <div class="reel-title">Entrepreneur Stories</div>
+              <div class="reel-plays">18 reels / month</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PROCESS ════════════════════════════════════════════ -->
+  <section id="process" class="divider">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">How it works</p>
+        <h2 class="section-title">
+          Simple process.<br/>
+          <span class="serif">Real results.</span>
+        </h2>
+      </div>
+
+      <div class="process-grid reveal">
+        <div class="process-step">
+          <div class="step-num">01</div>
+          <div class="step-title">Onboarding Call</div>
+          <p class="step-desc">30 minutes. We learn your niche, audience, goals, and voice. That's all we need.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">02</div>
+          <div class="step-title">Content Plan</div>
+          <p class="step-desc">We build your monthly calendar — topics, formats, posting schedule. All AI-assisted and trend-aware.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">03</div>
+          <div class="step-title">Production</div>
+          <p class="step-desc">Scripts, visuals, captions, and edits produced in bulk every week. Ready to go.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">04</div>
+          <div class="step-title">Auto-Published</div>
+          <p class="step-desc">Content goes live on your accounts automatically. You just watch the numbers move.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ QUOTE ══════════════════════════════════════════════ -->
+  <section class="quote-section divider">
+    <div class="container">
+      <div class="reveal">
+        <p class="quote-text">
+          "We went from posting once a week to
+          <strong>30 reels a month</strong> —
+          without hiring a single person."
+        </p>
+        <p class="quote-attr">— Finance Creator, 42K followers</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CONTACT ════════════════════════════════════════════ -->
+  <section id="contact" class="divider">
+    <div class="container">
+      <div class="contact-wrap">
+
+        <div class="contact-left reveal">
+          <p class="section-label">Get Started</p>
+          <h2 class="section-title" style="margin-bottom:20px;">
+            Let's build<br/>your channel.
+          </h2>
+          <p>Tell us about your goals and we'll reach out within 24 hours with a plan.</p>
+
+          <div class="contact-feature">Done-for-you content every month</div>
+          <div class="contact-feature">AI-powered, posted automatically</div>
+          <div class="contact-feature">No long-term contracts</div>
+          <div class="contact-feature">Response within 24 hours</div>
+        </div>
+
+        <div class="reveal reveal-delay-1">
+          <div class="form-card">
+            <form id="contactForm" onsubmit="handleSubmit(event)">
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Name</label>
+                  <input id="name" type="text" placeholder="Alex Johnson" required class="form-input"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input id="email" type="email" placeholder="you@email.com" required class="form-input"/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Platform / Niche</label>
+                <select id="service" class="form-input" style="appearance:none; cursor:pointer;">
+                  <option value="" style="background:#111">Select your platform...</option>
+                  <option value="instagram" style="background:#111">Instagram</option>
+                  <option value="youtube" style="background:#111">YouTube</option>
+                  <option value="tiktok" style="background:#111">TikTok</option>
+                  <option value="faceless" style="background:#111">Faceless Channel</option>
+                  <option value="brand" style="background:#111">Brand / Business</option>
+                  <option value="multi" style="background:#111">Multiple Platforms</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Tell us your goal</label>
+                <textarea id="message" rows="4" required class="form-input"
+                  placeholder="e.g. I want to post 20 reels/month and grow my IG to 10k..."></textarea>
+              </div>
+
+              <button type="submit" id="submitBtn" class="btn-primary form-submit">
+                Send message →
+              </button>
+
+            </form>
+
+            <div id="successMsg">
+              <div class="success-icon">🚀</div>
+              <h3 style="font-size:22px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">You're in.</h3>
+              <p style="font-size:14px; color:var(--muted);">We'll hit you back within 24 hours.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ════════════════════════════════════════════ -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <a href="#" class="logo">CLPD<span>.</span></a>
+        <span class="footer-copy">© 2026 CLPD Studio. AI Content for Creators.</span>
+        <ul class="footer-links">
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">TikTok</a></li>
+          <li><a href="#">YouTube</a></li>
+        </ul>
       </div>
     </div>
   </footer>
 
   <script>
-    // ── FORM ─────────────────────────────────────────────────────────
+    // ── MOBILE NAV ──────────────────────────────────────────
+    if (window.innerWidth <= 768) {
+      document.getElementById('mobile-cta').style.display = 'inline-flex';
+    }
+
+    // ── FORM ────────────────────────────────────────────────
     const WEBHOOK_URL = 'YOUR_WEBHOOK_URL_HERE';
 
     async function handleSubmit(e) {
@@ -547,12 +1045,13 @@
       const btn = document.getElementById('submitBtn');
       btn.textContent = 'Sending...';
       btn.disabled = true;
+      btn.style.opacity = '0.6';
 
       const payload = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        service: document.getElementById('service').value,
-        message: document.getElementById('message').value,
+        name:      document.getElementById('name').value,
+        email:     document.getElementById('email').value,
+        service:   document.getElementById('service').value,
+        message:   document.getElementById('message').value,
         timestamp: new Date().toISOString()
       };
 
@@ -564,18 +1063,24 @@
         });
       } catch (_) {}
 
-      document.getElementById('contactForm').classList.add('hidden');
-      document.getElementById('successMsg').classList.remove('hidden');
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
     }
 
-    // ── SCROLL FADE ───────────────────────────────────────────────────
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(el => {
-        if (el.isIntersecting) el.target.classList.add('show');
+    // ── SCROLL REVEAL ───────────────────────────────────────
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.08 });
 
-    document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Trigger hero reveals immediately
+    document.querySelectorAll('#hero .reveal').forEach((el, i) => {
+      setTimeout(() => el.classList.add('in'), i * 120);
+    });
   </script>
+
 </body>
 </html>
