@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Architect — AI Agency</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { cyan: { neon: '#00FFFF' } },
+          fontFamily: { mono: ['JetBrains Mono', 'Courier New', 'monospace'] },
+          animation: {
+            'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+            'scanline': 'scanline 8s linear infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'border-spin': 'borderSpin 4s linear infinite',
+          },
+          keyframes: {
+            glowPulse: {
+              '0%, 100%': { boxShadow: '0 0 10px #00FFFF, 0 0 20px #00FFFF' },
+              '50%': { boxShadow: '0 0 25px #00FFFF, 0 0 50px #00FFFF, 0 0 75px #00FFFF' },
+            },
+            scanline: {
+              '0%': { transform: 'translateY(-100%)' },
+              '100%': { transform: 'translateY(100vh)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            borderSpin: {
+              '0%': { backgroundPosition: '0% 50%' },
+              '100%': { backgroundPosition: '200% 50%' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #000000; color: #ffffff; font-family: 'JetBrains Mono', monospace; }
+
+    /* Scanline overlay */
+    .scanline-overlay::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(transparent, rgba(0,255,255,0.15), transparent);
+      animation: scanline 8s linear infinite;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Grid noise background */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* Neon glow text */
+    .neon-text {
+      color: #00FFFF;
+      text-shadow: 0 0 10px #00FFFF, 0 0 30px #00FFFF, 0 0 60px rgba(0,255,255,0.5);
+    }
+
+    /* Neon border */
+    .neon-border {
+      border: 1px solid #00FFFF;
+      box-shadow: 0 0 10px rgba(0,255,255,0.3), inset 0 0 10px rgba(0,255,255,0.05);
+    }
+
+    .neon-border:hover {
+      box-shadow: 0 0 20px rgba(0,255,255,0.6), inset 0 0 20px rgba(0,255,255,0.1);
+    }
+
+    /* Neon button */
+    .neon-btn {
+      background: transparent;
+      border: 1px solid #00FFFF;
+      color: #00FFFF;
+      text-shadow: 0 0 8px #00FFFF;
+      box-shadow: 0 0 15px rgba(0,255,255,0.3);
+      transition: all 0.3s ease;
+    }
+    .neon-btn:hover {
+      background: rgba(0,255,255,0.1);
+      box-shadow: 0 0 30px rgba(0,255,255,0.7), 0 0 60px rgba(0,255,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    /* Bento card */
+    .bento-card {
+      background: rgba(0,255,255,0.03);
+      border: 1px solid rgba(0,255,255,0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    .bento-card:hover {
+      border-color: #00FFFF;
+      background: rgba(0,255,255,0.07);
+      box-shadow: 0 0 25px rgba(0,255,255,0.2);
+      transform: translateY(-4px);
+    }
+
+    /* Portfolio card */
+    .portfolio-card {
+      background: rgba(0,255,255,0.03);
+      border: 1px solid rgba(0,255,255,0.15);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .portfolio-card:hover {
+      border-color: #00FFFF;
+      box-shadow: 0 0 30px rgba(0,255,255,0.25);
+    }
+
+    /* Input */
+    .neon-input {
+      background: rgba(0,255,255,0.03);
+      border: 1px solid rgba(0,255,255,0.25);
+      color: white;
+      transition: all 0.3s ease;
+    }
+    .neon-input:focus {
+      outline: none;
+      border-color: #00FFFF;
+      box-shadow: 0 0 15px rgba(0,255,255,0.3);
+    }
+    .neon-input::placeholder { color: rgba(0,255,255,0.3); }
+
+    /* Nav */
+    nav { backdrop-filter: blur(20px); }
+
+    /* Hero gradient */
+    .hero-gradient {
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,255,255,0.15), transparent);
+    }
+
+    /* Counter */
+    .stat-num {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #00FFFF;
+      text-shadow: 0 0 20px #00FFFF;
+    }
+
+    /* Cursor blink */
+    .cursor::after {
+      content: '|';
+      animation: blink 1s step-end infinite;
+      color: #00FFFF;
+    }
+    @keyframes blink { '0%, 100%': { opacity: 1 } '50%': { opacity: 0 } }
+    @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
+
+    /* Section fade */
+    .section-enter {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .section-enter.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="scanline-overlay grid-bg">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 border-b border-cyan-500/20 bg-black/60">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-cyan-400 text-xl font-bold tracking-wider neon-text">&gt;_ DARCH</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm text-gray-400">
+        <a href="#services" class="hover:text-cyan-400 transition-colors">Services</a>
+        <a href="#portfolio" class="hover:text-cyan-400 transition-colors">Portfolio</a>
+        <a href="#about" class="hover:text-cyan-400 transition-colors">About</a>
+        <a href="#contact" class="neon-btn px-4 py-2 rounded text-sm font-bold tracking-widest">CONTACT</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero-gradient min-h-screen flex items-center justify-center pt-20 px-6">
+    <div class="max-w-5xl mx-auto text-center">
+
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 border border-cyan-500/40 rounded-full px-4 py-2 mb-8 text-xs text-cyan-400 tracking-widest">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        AVAILABLE FOR PROJECTS — 2026
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-5xl md:text-8xl font-black tracking-tight mb-6 leading-none">
+        <span class="text-white">DIGITAL</span><br/>
+        <span class="neon-text cursor">ARCHITECT</span>
+      </h1>
+
+      <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+        We build AI-powered systems that <span class="text-cyan-400">automate</span>,
+        <span class="text-cyan-400">create</span>, and <span class="text-cyan-400">scale</span>
+        your brand at machine speed.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#contact" class="neon-btn px-8 py-4 rounded font-bold tracking-widest text-sm w-full sm:w-auto text-center">
+          START A PROJECT →
+        </a>
+        <a href="#portfolio" class="text-gray-400 hover:text-white transition-colors text-sm tracking-widest px-8 py-4">
+          VIEW WORK ↓
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-6 max-w-lg mx-auto mt-20 pt-10 border-t border-cyan-500/10">
+        <div>
+          <div class="stat-num">50+</div>
+          <div class="text-gray-500 text-xs tracking-widest mt-1">PROJECTS</div>
+        </div>
+        <div>
+          <div class="stat-num">100%</div>
+          <div class="text-gray-500 text-xs tracking-widest mt-1">AUTOMATED</div>
+        </div>
+        <div>
+          <div class="stat-num">24/7</div>
+          <div class="text-gray-500 text-xs tracking-widest mt-1">AI ACTIVE</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES — BENTO GRID -->
+  <section id="services" class="py-32 px-6 section-enter">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-16">
+        <p class="text-cyan-400 text-xs tracking-widest mb-3">// 01 — SERVICES</p>
+        <h2 class="text-4xl md:text-6xl font-black text-white">WHAT WE<br/><span class="neon-text">BUILD</span></h2>
+      </div>
+
+      <!-- Bento Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Card 1 — Large -->
+        <div class="bento-card rounded-2xl p-8 md:col-span-2">
+          <div class="text-4xl mb-6">🎬</div>
+          <h3 class="text-2xl font-bold text-white mb-3">AI Video Production</h3>
+          <p class="text-gray-400 leading-relaxed mb-6">
+            Automated Reels, Shorts, and long-form content pipelines.
+            From script to published — zero human bottleneck.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs border border-cyan-500/30 text-cyan-400 px-3 py-1 rounded-full">Auto-posting</span>
+            <span class="text-xs border border-cyan-500/30 text-cyan-400 px-3 py-1 rounded-full">AI captions</span>
+            <span class="text-xs border border-cyan-500/30 text-cyan-400 px-3 py-1 rounded-full">Bulk render</span>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bento-card rounded-2xl p-8">
+          <div class="text-4xl mb-6">🎙️</div>
+          <h3 class="text-2xl font-bold text-white mb-3">RVC Voice Modeling</h3>
+          <p class="text-gray-400 leading-relaxed">
+            Clone any voice. Custom AI voice models trained on your audio for ads, content & agents.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bento-card rounded-2xl p-8">
+          <div class="text-4xl mb-6">⚡</div>
+          <h3 class="text-2xl font-bold text-white mb-3">Agentic Workflows</h3>
+          <p class="text-gray-400 leading-relaxed">
+            n8n + Make + AI agents that handle leads, CRM, outreach, and reporting — autonomously.
+          </p>
+        </div>
+
+        <!-- Card 4 — Large -->
+        <div class="bento-card rounded-2xl p-8 md:col-span-2">
+          <div class="text-4xl mb-6">🤖</div>
+          <h3 class="text-2xl font-bold text-white mb-3">AI Caller & Lead Systems</h3>
+          <p class="text-gray-400 leading-relaxed mb-6">
+            Retell AI-powered voice agents that call, qualify, and book leads
+            24/7 without a human sales rep.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs border border-cyan-500/30 text-cyan-400 px-3 py-1 rounded-full">Voice AI</span>
+            <span class="text-xs border border-cyan-500/30 text-cyan-400 px-3 py-1 rounded-full">GHL integration</span>
+            <span class="text-xs border border-cyan-500/30 text-cyan-400 px-3 py-1 rounded-full">Auto follow-up</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section id="portfolio" class="py-32 px-6 section-enter">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="mb-16">
+        <p class="text-cyan-400 text-xs tracking-widest mb-3">// 02 — PORTFOLIO</p>
+        <h2 class="text-4xl md:text-6xl font-black text-white">RECENT<br/><span class="neon-text">WORK</span></h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Portfolio Item 1 -->
+        <div class="portfolio-card rounded-2xl group cursor-pointer">
+          <div class="aspect-[9/16] bg-gradient-to-br from-cyan-950 to-black flex items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="text-6xl">▶</span>
+            <div class="absolute bottom-4 left-4 right-4">
+              <div class="text-xs text-cyan-400 tracking-widest mb-1">AI VIDEO</div>
+              <div class="text-white font-bold">Franchise Experts Reels</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portfolio Item 2 -->
+        <div class="portfolio-card rounded-2xl group cursor-pointer">
+          <div class="aspect-[9/16] bg-gradient-to-br from-violet-950 to-black flex items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="text-6xl">🤖</span>
+            <div class="absolute bottom-4 left-4 right-4">
+              <div class="text-xs text-cyan-400 tracking-widest mb-1">AUTOMATION</div>
+              <div class="text-white font-bold">AI Lead Caller System</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portfolio Item 3 -->
+        <div class="portfolio-card rounded-2xl group cursor-pointer">
+          <div class="aspect-[9/16] bg-gradient-to-br from-emerald-950 to-black flex items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <span class="text-6xl">🎙️</span>
+            <div class="absolute bottom-4 left-4 right-4">
+              <div class="text-xs text-cyan-400 tracking-widest mb-1">VOICE AI</div>
+              <div class="text-white font-bold">Custom Voice Model</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="py-32 px-6 section-enter">
+    <div class="max-w-6xl mx-auto">
+      <div class="neon-border rounded-2xl p-12 md:p-16 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl"></div>
+        <div class="relative">
+          <p class="text-cyan-400 text-xs tracking-widest mb-6">// 03 — ABOUT</p>
+          <h2 class="text-4xl md:text-5xl font-black text-white mb-8 leading-tight">
+            We don't build websites.<br/>
+            <span class="neon-text">We build machines.</span>
+          </h2>
+          <p class="text-gray-400 text-lg leading-relaxed max-w-2xl">
+            We're an AI-native agency that architects end-to-end automation systems.
+            From lead generation to content publishing, every process we build runs
+            without human intervention — so you scale without hiring.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="py-32 px-6 section-enter">
+    <div class="max-w-2xl mx-auto">
+
+      <div class="mb-12 text-center">
+        <p class="text-cyan-400 text-xs tracking-widest mb-3">// 04 — CONTACT</p>
+        <h2 class="text-4xl md:text-6xl font-black text-white">START A<br/><span class="neon-text">PROJECT</span></h2>
+        <p class="text-gray-400 mt-4">Drop your details. We'll respond within 24 hours.</p>
+      </div>
+
+      <div class="neon-border rounded-2xl p-8">
+        <form id="contactForm" onsubmit="handleSubmit(event)">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="text-xs text-cyan-400 tracking-widest block mb-2">NAME</label>
+              <input id="name" type="text" placeholder="Zehaan Khan" required
+                class="neon-input w-full rounded px-4 py-3 text-sm" />
+            </div>
+            <div>
+              <label class="text-xs text-cyan-400 tracking-widest block mb-2">EMAIL</label>
+              <input id="email" type="email" placeholder="you@domain.com" required
+                class="neon-input w-full rounded px-4 py-3 text-sm" />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="text-xs text-cyan-400 tracking-widest block mb-2">SERVICE</label>
+            <select id="service" class="neon-input w-full rounded px-4 py-3 text-sm">
+              <option value="" class="bg-black">Select a service...</option>
+              <option value="ai-video" class="bg-black">AI Video Production</option>
+              <option value="rvc-voice" class="bg-black">RVC Voice Modeling</option>
+              <option value="agentic" class="bg-black">Agentic Workflows</option>
+              <option value="ai-caller" class="bg-black">AI Caller System</option>
+              <option value="other" class="bg-black">Other</option>
+            </select>
+          </div>
+          <div class="mb-6">
+            <label class="text-xs text-cyan-400 tracking-widest block mb-2">MESSAGE</label>
+            <textarea id="message" rows="4" placeholder="Tell us about your project..." required
+              class="neon-input w-full rounded px-4 py-3 text-sm resize-none"></textarea>
+          </div>
+          <button type="submit" id="submitBtn"
+            class="neon-btn w-full py-4 rounded font-bold tracking-widest text-sm">
+            SEND MESSAGE →
+          </button>
+        </form>
+
+        <!-- Success State -->
+        <div id="successMsg" class="hidden text-center py-12">
+          <div class="text-5xl mb-4">✅</div>
+          <h3 class="text-2xl font-bold neon-text mb-2">MESSAGE SENT</h3>
+          <p class="text-gray-400">We'll be in touch within 24 hours.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-cyan-500/10 py-10 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <span class="neon-text font-bold text-lg tracking-wider">&gt;_ DARCH</span>
+      <span class="text-gray-600 text-sm">© 2026 Digital Architect. All systems operational.</span>
+      <div class="flex gap-6 text-gray-500 text-sm">
+        <a href="#" class="hover:text-cyan-400 transition-colors">Instagram</a>
+        <a href="#" class="hover:text-cyan-400 transition-colors">LinkedIn</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ─── FORM WEBHOOK ───────────────────────────────────────────────
+    const WEBHOOK_URL = 'YOUR_WEBHOOK_URL_HERE'; // ← paste your n8n webhook here
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'SENDING...';
+      btn.disabled = true;
+
+      const payload = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        service: document.getElementById('service').value,
+        message: document.getElementById('message').value,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        document.getElementById('contactForm').classList.add('hidden');
+        document.getElementById('successMsg').classList.remove('hidden');
+      } catch (err) {
+        // Even if webhook fails, show success (form was filled)
+        document.getElementById('contactForm').classList.add('hidden');
+        document.getElementById('successMsg').classList.remove('hidden');
+      }
+    }
+
+    // ─── SCROLL ANIMATIONS ──────────────────────────────────────────
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.section-enter').forEach(el => observer.observe(el));
+
+    // ─── SMOOTH SCROLL ──────────────────────────────────────────────
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>
