@@ -464,16 +464,26 @@
 </div>
 
 <script>
-  const API = '/api/leads';
-  let password = '';
+  const HOOKS = {
+    get:    'https://hook.us2.make.com/we7ywcu7e4bcsv94za03bg9w04w3gglm',
+    add:    'https://hook.us2.make.com/nasps1kk5fy1dv86ma3ld4rzx5xhdpc4',
+    update: 'https://hook.us2.make.com/qyuq77at2eixavalxw8evf95k4ngtz7r'
+  };
+  const CORRECT_PASSWORD = 'videoaiguy2026';
   let allLeads = [];
   let currentLeadId = '';
 
   // ── AUTH ─────────────────────────────────────────
   function login() {
     const val = document.getElementById('pwdInput').value;
-    password = val;
-    fetchLeads(true);
+    if (val !== CORRECT_PASSWORD) {
+      document.getElementById('loginError').textContent = 'Wrong password. Try again.';
+      document.getElementById('loginError').style.display = 'block';
+      return;
+    }
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    fetchLeads();
   }
 
   document.getElementById('pwdInput').addEventListener('keydown', e => {
@@ -481,7 +491,6 @@
   });
 
   function logout() {
-    password = '';
     allLeads = [];
     document.getElementById('app').style.display = 'none';
     document.getElementById('loginScreen').style.display = 'flex';
@@ -489,47 +498,35 @@
   }
 
   // ── FETCH ────────────────────────────────────────
-  async function fetchLeads(isLogin = false) {
+  async function fetchLeads() {
     document.getElementById('loadingState').style.display = 'block';
     document.getElementById('leadsTable').style.display = 'none';
     document.getElementById('emptyState').style.display = 'none';
 
     try {
-      const r = await fetch(API, { headers: { 'x-password': password } });
+      const r = await fetch(HOOKS.get, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const text = await r.text();
+      let data = [];
+      try { data = JSON.parse(text); } catch(_) { data = []; }
+      if (!Array.isArray(data)) data = [];
 
-      if (r.status === 401) {
-        document.getElementById('loginError').textContent = 'Wrong password. Try again.';
-        document.getElementById('loginError').style.display = 'block';
-        document.getElementById('loadingState').style.display = 'none';
-        return;
-      }
-
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        if (isLogin) {
-          document.getElementById('loginError').textContent = 'API error: ' + (err.error || r.status) + '. Check Notion token in Vercel env vars.';
-          document.getElementById('loginError').style.display = 'block';
-        }
-        document.getElementById('loadingState').style.display = 'none';
-        return;
-      }
-
-      allLeads = await r.json();
-
-      if (isLogin) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-        document.getElementById('loginError').style.display = 'none';
-      }
+      // Normalize Make.com data store format
+      allLeads = data.map(item => ({
+        id:        item.key || item.id || String(Math.random()),
+        name:      item.name || item.data?.name || '',
+        email:     item.email || item.data?.email || '',
+        platform:  item.platform || item.data?.platform || '',
+        message:   item.message || item.data?.message || '',
+        status:    item.status || item.data?.status || 'New',
+        notes:     item.notes || item.data?.notes || '',
+        source:    item.source || item.data?.source || '',
+        submitted: item.submitted || item.data?.submitted || item.createdAt || ''
+      }));
 
       updateStats();
       renderTable();
     } catch (e) {
-      if (isLogin) {
-        document.getElementById('loginError').textContent = 'Connection failed: ' + e.message;
-        document.getElementById('loginError').style.display = 'block';
-      }
-      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('loadingState').innerHTML = '<div style="color:var(--red)">Failed to load leads: ' + e.message + '</div>';
     }
   }
 
@@ -606,9 +603,9 @@
     const lead = allLeads.find(l => l.id === id);
     if (lead) lead.status = status;
     updateStats();
-    await fetch(API, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-password': password },
+    await fetch(HOOKS.update, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, status })
     });
   }
@@ -634,9 +631,9 @@
     const notes = document.getElementById('modalNotes').value;
     const lead = allLeads.find(l => l.id === currentLeadId);
     if (lead) lead.notes = notes;
-    await fetch(API, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-password': password },
+    await fetch(HOOKS.update, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: currentLeadId, notes })
     });
     closeModal();
